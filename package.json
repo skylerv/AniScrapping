@@ -1,7 +1,6 @@
 {
   "name": "aniscrapping",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,6 +14,16 @@
     "axios": "^1.5.1",
     "cheerio": "^1.0.0-rc.12",
     "express": "^4.18.2",
+    "playwright": "^1.39.0",
     "puppeteer": "^21.4.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skylerv/AniScrapping.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skylerv/AniScrapping/issues"
+  },
+  "homepage": "https://github.com/skylerv/AniScrapping#readme",
+  "description": ""
 }

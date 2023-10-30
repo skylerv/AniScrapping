@@ -1,83 +1,60 @@
 const express = require('express');
-const axios = require('axios');
-const cheerio = require('cheerio');
+const playwright = require('playwright')
 const app = express();
 let url = 'https://9animetv.to/tv';
 let url2 = 'https://9animetv.to/search?keyword='
 
 // http://localhost:8080/GetAllAnime
-app.get('/GetAllAnime', function(req, res) {
-    let animeList = [];
-    axios({
-        method:'get',
-        url: url
-    }).then(resp => {
-        const html = resp.data
-        const $ = cheerio.load(html)
-        let titles = $('.film-name');
-        titles.each(function (i, ele) {
-            let title = $(ele).find('div.film-detail > .film-name').text();
-            let link = $(ele).find('div.film-detail > .film-name > a').attr('href');
-            let image = $(ele).find('img.film-poster-img').attr('src');
-            animeList.push({
+app.get('/GetAllAnime', async function (req, res) {
+    const browser = await playwright.chromium.launch({
+        headless: true
+    })
+    
+    const page = await browser.newPage();
+    await page.goto(url)
+    const anime = await page.$eval('.film_list-grid', headerElm => {
+        const data = []
+        const animeList = headerElm.querySelectorAll('.flw-item.item-qtip');
+        Array.from(animeList).forEach(ele => {
+            let title = ele.querySelector('div.film-detail > .film-name').textContent;
+            let link = ele.querySelector('div.film-detail > .film-name > a').getAttribute('href');
+            let image = ele.querySelector('img.film-poster-img').getAttribute('data-src')
+            data.push({
                 title: title,
                 link: link,
                 image: image
             })
         })
-        res.json(animeList);
+        return data;
     })
+    res.json(anime)
 })
 
 // http://localhost:8080/GetAnimeSearch?keyword=hori
 //https://9animetv.to/search?keyword=hori
-app.get('/GetAnimeSearch', function (req, res) {
+app.get('/GetAnimeSearch', async function (req, res) {
+    const browser = await playwright.chromium.launch({
+        headless: true
+    })
     const keyword = req.query.keyword;
-    let animeList = [];
-    axios({
-        method: 'get',
-        url: url2 + keyword
-    }).then(resp => {
-        const html = resp.data
-        const $ = cheerio.load(html)
-        let anime = $('div.flw-item.item-qtip');
-        anime.each(function (i, ele) {
-            let title = $(ele).find('div.film-detail > .film-name').text();
-            let link = $(ele).find('div.film-detail > .film-name > a').attr('href');
-            let image = $(ele).find('img.film-poster-img').attr('src');
-            animeList.push({
+    const page = await browser.newPage();
+    await page.goto(url2 + keyword)
+    const anime = await page.$eval('.film_list-grid', headerElm => {
+        const data = []
+        const animeList = headerElm.querySelectorAll('.flw-item.item-qtip');
+        Array.from(animeList).forEach(ele => {
+            let title = ele.querySelector('div.film-detail > .film-name').textContent;
+            let link = ele.querySelector('div.film-detail > .film-name > a').getAttribute('href');
+            let image = ele.querySelector('img.film-poster-img').getAttribute('data-src')
+            data.push({
                 title: title,
                 link: link,
                 image: image
             })
         })
-        res.json(animeList);
+        return data;
     })
-})
-
-app.get('/GetAnimeSearch', function (req, res) {
-    const keyword = req.query.keyword;
-    let animeList = [];
-    axios({
-        method: 'get',
-        url: url2 + keyword
-    }).then(resp => {
-        const html = resp.data
-        const $ = cheerio.load(html)
-        let anime = $('div.flw-item.item-qtip');
-        anime.each(function (i, ele) {
-            let animeTitle = $(ele).find('div.film-detail > .film-name').text();
-            let animeLink = $(ele).find('div.film-detail > .film-name > a').attr('href');
-            let imageLink = $(ele).find('img.film-poster-img').attr('src');
-            animeList.push({
-                title: animeTitle,
-                link: animeLink,
-                image: imageLink
-            })
-        })
-        console.log(animeList);
-        res.json(animeList);
-    })
+    res.json(anime)
 })
 
 app.listen('8080');
